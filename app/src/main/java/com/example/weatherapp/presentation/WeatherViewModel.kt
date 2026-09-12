@@ -1,5 +1,7 @@
 package com.example.weatherapp.presentation
 
+import android.content.Context
+import android.location.Geocoder
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,16 +12,21 @@ import com.example.weatherapp.domain.location.LocationTracker
 import com.example.weatherapp.domain.model.CityLocation
 import com.example.weatherapp.domain.repository.WeatherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class WeatherViewModel @Inject constructor(
     private val repository: WeatherRepository,
     private val locationTracker: LocationTracker,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val userPreferencesRepository: UserPreferencesRepository,
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
     var state by mutableStateOf(WeatherState())
@@ -46,9 +53,27 @@ class WeatherViewModel @Inject constructor(
             state = state.copy(isLoading = true, error = null)
             val location = locationTracker.getCurrentLocation()
             if (location != null) {
-                loadWeatherInfo(location.latitude, location.longitude, "My Location")
+                val resolvedCityName = getCityNameFromCoordinates(location.latitude, location.longitude)
+                loadWeatherInfo(location.latitude, location.longitude, resolvedCityName)
             } else {
                 loadWeatherInfo(51.5074, -0.1278, "London")
+            }
+        }
+    }
+
+    private suspend fun getCityNameFromCoordinates(lat: Double, long: Double): String {
+        return withContext(Dispatchers.IO) {
+            try {
+                val geocoder = Geocoder(context, Locale.getDefault())
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocation(lat, long, 1)
+                val city = addresses?.firstOrNull()?.locality
+                    ?: addresses?.firstOrNull()?.subAdminArea
+                    ?: addresses?.firstOrNull()?.adminArea
+                    ?: "Current Location"
+                city
+            } catch (_: Exception) {
+                "Current Location"
             }
         }
     }
