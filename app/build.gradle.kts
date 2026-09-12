@@ -84,6 +84,10 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
 
+    // Location & Coil
+    implementation(libs.play.services.location)
+    implementation(libs.coil.compose)
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

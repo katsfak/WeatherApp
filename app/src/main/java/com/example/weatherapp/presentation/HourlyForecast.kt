@@ -42,7 +42,8 @@ fun HourlyForecast(
             ) {
                 items(weatherDataList) { data ->
                     HourlyWeatherDisplay(
-                        weatherData = data
+                        weatherData = data,
+                        isFahrenheit = state.isFahrenheit
                     )
                 }
             }

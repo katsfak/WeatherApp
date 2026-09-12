@@ -1,7 +1,9 @@
 package com.example.weatherapp.domain.repository
 
+import com.example.weatherapp.domain.model.CityLocation
 import com.example.weatherapp.domain.model.WeatherInfo
 
 interface WeatherRepository {
     suspend fun getWeatherData(lat: Double, long: Double): Result<WeatherInfo>
+    suspend fun searchCity(query: String): Result<List<CityLocation>>
 }

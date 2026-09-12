@@ -1,5 +1,8 @@
 package com.example.weatherapp.di
 
+import com.example.weatherapp.data.local.WeatherDao
+import com.example.weatherapp.data.remote.AirQualityApi
+import com.example.weatherapp.data.remote.GeocodingApi
 import com.example.weatherapp.data.remote.WeatherApi
 import com.example.weatherapp.data.repository.WeatherRepositoryImpl
 import com.example.weatherapp.domain.repository.WeatherRepository
@@ -30,7 +33,34 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideWeatherRepository(api: WeatherApi): WeatherRepository {
-        return WeatherRepositoryImpl(api)
+    fun provideGeocodingApi(): GeocodingApi {
+        val json = Json { ignoreUnknownKeys = true }
+        return Retrofit.Builder()
+            .baseUrl(GeocodingApi.BASE_URL)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(GeocodingApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAirQualityApi(): AirQualityApi {
+        val json = Json { ignoreUnknownKeys = true }
+        return Retrofit.Builder()
+            .baseUrl(AirQualityApi.BASE_URL)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(AirQualityApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWeatherRepository(
+        api: WeatherApi,
+        geocodingApi: GeocodingApi,
+        airQualityApi: AirQualityApi,
+        dao: WeatherDao
+    ): WeatherRepository {
+        return WeatherRepositoryImpl(api, geocodingApi, airQualityApi, dao)
     }
 }

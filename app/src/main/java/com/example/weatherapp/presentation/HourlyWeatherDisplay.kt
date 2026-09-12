@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -17,17 +18,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.weatherapp.domain.model.WeatherData
 import java.time.format.DateTimeFormatter
+import kotlin.math.roundToInt
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HourlyWeatherDisplay(
     weatherData: WeatherData,
+    isFahrenheit: Boolean = false,
     modifier: Modifier = Modifier,
     textColor: Color = Color.White
 ) {
     val formattedTime = weatherData.time.format(DateTimeFormatter.ofPattern("HH:mm"))
+    val tempVal = if (isFahrenheit) {
+        (weatherData.temperatureCelsius * 9 / 5 + 32).roundToInt()
+    } else {
+        weatherData.temperatureCelsius.roundToInt()
+    }
+    val unitStr = if (isFahrenheit) "°F" else "°C"
 
     Column(
         modifier = modifier
@@ -43,13 +53,15 @@ fun HourlyWeatherDisplay(
             color = Color.LightGray,
             fontSize = 12.sp
         )
-        Text(
-            text = weatherData.weatherType.iconEmoji,
-            fontSize = 28.sp,
-            modifier = Modifier.padding(vertical = 8.dp)
+        AsyncImage(
+            model = weatherData.weatherType.iconUrl,
+            contentDescription = weatherData.weatherType.weatherDesc,
+            modifier = Modifier
+                .size(36.dp)
+                .padding(vertical = 4.dp)
         )
         Text(
-            text = "${weatherData.temperatureCelsius}°C",
+            text = "$tempVal$unitStr",
             color = textColor,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
